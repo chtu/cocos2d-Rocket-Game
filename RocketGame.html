@@ -1,0 +1,28 @@
+<!--
+
+This is the entry point into the program.
+As long this page is being served by a server, it should run the
+code.
+
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hello Cocos2d-JS</title>
+    <style>
+      body {
+        background-color: black;
+      }
+    </style>
+<body> 
+  <form>
+    <input type="file" id="input" onchange="loadGame()">
+  </form>
+    <canvas id="gameCanvas" width="800" height="450"></canvas>
+    <script type="text/javascript" src="js/cocos2d-js-v3.13-lite.js" charset="UTF-8"></script>
+    <script type="text/javascript" src="js/map.js" charset="UTF-8"></script>
+    <script type="text/javascript" src="js/loadGame.js" charset="UTF-8"></script>
+    <script type="text/javascript" src="js/game.js" charset="UTF-8"></script>
+</body>
+</html>
