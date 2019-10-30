@@ -1,8 +1,12 @@
+/*
+The game runs from this file. It will automatically run as soon as a file is uploaded.
+*/
+
+// Global variables and constants
 var maze;
 var scale = 2;
 const TIME_BETWEEN_BLOCKS = 0.5;
 const ROTATION_TIME = 0.10;
-
 
 var windowSize;
 var startingX, startingY;
@@ -10,6 +14,8 @@ var tileWidth, tileHeight;
 var numCols, numRows;
 var initialized = false;
 
+// Retrieves the position where the rocket should be placed
+// when it begins.
 function getPosition(xIndex, yIndex) {
 	// Convert the y Index to start from the bottom instead.
 	yIndex = numRows - yIndex;
@@ -21,27 +27,19 @@ function getPosition(xIndex, yIndex) {
 	newCoord = [xPos, yPos];
 	return newCoord;
 }
+
 /*
-		for (let i = 0; i < solutionCoordinates.length; i++) {
-			let nextIndexes = solutionCoordinates[i];
-			let newPos = getPosition(nextIndexes[0], nextIndexes[1]);
-			let spriteAction = new cc.MoveBy(5, cc.p(500, 0));
-			rocket.runAction(spriteAction);
-
-			break;
-		}
+This method will recursively move the sprite. Because the number
+of moves is determined during runtime, each action will begin
+after the previous action is scheduled to end.
 */
-
-function startAnimation(sprite, directions, obj) {
-	move(sprite, directions, obj);
-}
-
 function move(sprite, directions, obj) {
 	let currentDirection = directions[0];
 	let x = 0;
 	let y = 0;
 	let spriteRotation;
 
+	// Determine the current direction and rotation.
 	if (currentDirection === "R") {
 		x += tileWidth;
 		spriteRotation = new cc.RotateTo(ROTATION_TIME, 90);
@@ -56,6 +54,7 @@ function move(sprite, directions, obj) {
 		spriteRotation = new cc.RotateTo(ROTATION_TIME, 180);
 	}
 
+	// Set a timer to run the next move.
 	setTimeout(function() {
 		let spriteAction = new cc.MoveBy(TIME_BETWEEN_BLOCKS, cc.p(x, y));
 		sprite.runAction(spriteAction);
@@ -69,6 +68,7 @@ function move(sprite, directions, obj) {
 	}, TIME_BETWEEN_BLOCKS * 1000);
 }
 
+// The game layer
 var GameLayer = cc.Layer.extend({
 	ctor: function() {
 		this._super();
@@ -82,14 +82,8 @@ var GameLayer = cc.Layer.extend({
 		numCols = maze.getMaxCols();
 		let centerX = size.width / 2;
 		let centerY = size.height / 2;
-/*
-		var tile = cc.Sprite.create("images/wood.png");
-		tile.setPosition(size.width / 2, size.height / 2);
-		tile.setScale(1.5);
-		this.addChild(tile, 0);
-		*/
 
-		// Set the tiles
+		// Draw the tiles to the layer.
 		for (let i = 0; i < maze.getMaxRows(); i++) {
 			for (let j = 0; j < maze.getMaxCols(); j++) {
 				let tile = cc.Sprite.create("images/wood.png");
@@ -108,10 +102,10 @@ var GameLayer = cc.Layer.extend({
 			}
 		}
 
-		// Set the Walls
+		// Draw all of the walls.
+		// Retrieve the walls from the maze object.
 		const verticalWalls = maze.retrieveVerticalWalls();
 		const horizontalWalls = maze.retrieveHorizontalWalls();
-		console.log(verticalWalls);
 		// Set the vertical walls.
 		for (let i = 0; i < verticalWalls.length; i++) {
 			for (let j = 0; j < verticalWalls[i].length; j++) {
@@ -128,7 +122,6 @@ var GameLayer = cc.Layer.extend({
 			}
 		}
 
-
 		// Set the horizontal walls
 		for (let i = 0; i < horizontalWalls.length; i++) {
 			for (let j = 0; j < horizontalWalls[i].length; j++) {
@@ -144,16 +137,12 @@ var GameLayer = cc.Layer.extend({
 				this.addChild(hWall, 1);
 			}
 		}
-/*
-		var label = cc.LabelTTF.create("Hello World", "Arial", 40);
-		label.setPosition(size.width / 2, size.height / 2);
-		this.addChild(label, 1);
-		*/
 	},
 	onEnter: function() {
 		this._super();
 		let size = cc.director.getWinSize();
 
+		// Draw the rocket starting at the 0,0 position.
 		let rocket = cc.Sprite.create("images/rocket.png");
 		let coord = getPosition(0, 0);
 		rocket.setPosition(coord[0], coord[1]);
@@ -163,20 +152,7 @@ var GameLayer = cc.Layer.extend({
 		// Obtain the solutions and animate the sprite to follow
 		// the solution path.
 		const directions = maze.generateSolutionPath();
-		console.log(directions);
-
-		startAnimation(rocket, directions, this);
-/*
-		for (let i = 0; i < directions.length; i++) {
-			let nextIndexes = directions[i];
-			let newPos = getPosition(nextIndexes[0], nextIndexes[1]);
-			let spriteAction = new cc.MoveBy(5, cc.p(500, 0));
-			rocket.runAction(spriteAction);
-
-
-			setTimeout()
-		}
-*/
+		move(rocket, directions, this);
 	}
 });
 
@@ -188,9 +164,12 @@ GameLayer.scene = function() {
 	return scene;
 }
 
+// This method will begin the game.
+// loadGame.js sets this to run when a user has uploaded a
+// maze file.
 function runGame(mazeStr) {
 
-	maze = new Map(mazeStr);
+	maze = new Maze(mazeStr);
 
 	cc.game.onStart = function () {
 		// Load the resources

@@ -18,7 +18,7 @@ whether or not the space was already visited by the solution-generating
 algorithm.
 */
 
-class Map {
+class Maze {
 	// Construct the Map object
 	constructor(str) {
 		// Get the maximum number of rows and columns
@@ -34,6 +34,7 @@ class Map {
 		this.generateWalls(str);
 	}
 
+	// This will initiate the horizontal and vertical walls.
 	generateWalls(str) {
 		let lines = str.split("\n");
 		let map = []
@@ -59,42 +60,48 @@ class Map {
 		}
 	}
 
+	// Show the array of the current solution.
+	// Primarily for debugging purposes.
 	displaySolution() {
 		let solution = this.generateSolutionPath();
 
 		console.log(solution);
 	}
 
+	// Find a path that will take the rocket object from the top left
+	// to the bottom right in the maze. This will be performed recursively,
+	// continuously updating an array that serves as a record for previously
+	// visited blocks.
 	generateSolutionPath() {
 		let startingCoord = new Array(2);
 		startingCoord[0] = 0;
 		startingCoord[1] = 0;
 		let visitedBlocks = this.getInitialMaze();
-		let fullCoordinates = [];
+		let fullDirections = [];
 		visitedBlocks[startingCoord[1]][startingCoord[0]] = "0";
 
 		let nextPossiblePaths = this.getPossiblePaths(startingCoord[0], startingCoord[1]);
 
 		for (let i = 0; i < nextPossiblePaths.length; i++) {
 			let nextCoord = nextPossiblePaths[i];
-			if (this.visitBlock(visitedBlocks, startingCoord[0], startingCoord[1], nextCoord[0], nextCoord[1], fullCoordinates)) {
+			if (this.visitBlock(visitedBlocks, startingCoord[0], startingCoord[1], nextCoord[0], nextCoord[1], fullDirections)) {
 				break;
 			}
 		}
-		return fullCoordinates;
+		return fullDirections;
 	}
 
 	// This method will return true if we have reached the final block.
 	// if we have not reached the destination, then we will recursively call
 	// this method on the next block. If there is no next block that
 	// can be travelled to, then it will return false.
-	visitBlock(visitedBlocks, previousX, previousY, currentX, currentY, fullCoordinates) {
+	visitBlock(visitedBlocks, previousX, previousY, currentX, currentY, fullDirections) {
 		visitedBlocks[currentY][currentX] = "%";
 		// Base case. If we return true, then that means we hit the solution.
 		if ((currentX === this.maxCols-1) && (currentY === this.maxRows-1)) {
 			visitedBlocks[currentY][currentX] = "0";
 			let direction = this.getDirection(previousX, previousY, currentX, currentY)
-			fullCoordinates.unshift(direction);
+			fullDirections.unshift(direction);
 			return true;
 		}
 
@@ -108,13 +115,11 @@ class Map {
 			if (visitedBlocks[nextCoord[1]][nextCoord[0]] != "#")
 				continue
 
-			// This should only return true if the path ends up being the correct one.
-			// If this next block isn't along the solution path, we should update the
-			// visited blocks to show it's not valid.
-			if (this.visitBlock(visitedBlocks, currentX, currentY, nextCoord[0], nextCoord[1], fullCoordinates)) {
+			// This should only return true if the path ends up being the one that gets to the end.
+			if (this.visitBlock(visitedBlocks, currentX, currentY, nextCoord[0], nextCoord[1], fullDirections)) {
 				visitedBlocks[currentY][currentX] = "0";
 				let direction = this.getDirection(previousX, previousY, currentX, currentY)
-				fullCoordinates.unshift(direction);
+				fullDirections.unshift(direction);
 				return true;
 			}
 		}
@@ -124,6 +129,9 @@ class Map {
 		return false;
 	}
 
+	// Based on the current coordinates, determine which direction the
+	// rocket object can travel towards. The object can travel in any direction
+	// where there aren't any walls.
 	getPossiblePaths(currentX, currentY) {
 		let possiblePaths = [];
 		let coord;
@@ -149,6 +157,8 @@ class Map {
 
 	}
 
+	// Based on the current and previous coordinates, determine,
+	// which direction the object has traveled in.
 	getDirection(previousX, previousY, currentX, currentY) {
 		// The direction was right.
 		if (previousX < currentX)
@@ -168,11 +178,9 @@ class Map {
 
 	}
 
-	displayMap() {
-		console.log(this.horizontalWalls);
-		console.log(this.verticalWalls);
-	}
-
+	// This method gets a maze for the purpose of figuring out
+	// a solution. It will track which blocks have been visited
+	// so that it doesn't revisit old blocks.
 	getInitialMaze() {
 		let returnMaze = new Array(this.maxRows);
 		for (let i = 0; i < this.maxRows; i++) {
@@ -183,6 +191,8 @@ class Map {
 		return returnMaze;
 	}
 
+	// Reads from the ASCII-drawn maze and determines
+	// where the horizontal walls are located.
 	getHorizontalWalls(line) {
 		let walls = line.split("+");
 		walls.shift();
@@ -194,6 +204,8 @@ class Map {
 		return returnArr;
 	}
 
+	// Reads from the ASCII-drawn maze and determines
+	// where the vertical walls are located.
 	getVerticalWalls(line) {
 		let returnArr = new Array(this.maxCols+1);
 		for (let i = 0; i < (this.maxCols+1); i ++) {
@@ -206,6 +218,7 @@ class Map {
 		return returnArr;
 	}
 
+	// Calculates the number of columns in the maze.
 	calculateMaxCols(mazeStr) {
 		let topBorderWalls = mazeStr.split("\n")[0].trim().split("+");
 		let numWalls = 0;
@@ -217,6 +230,7 @@ class Map {
 		return numWalls;
 	}
 
+	// Calculates the number of rows in the maze.
 	calculateMaxRows(mazeStr) {
 		let allRows = mazeStr.split("\n");
 		return (allRows.length - 1) / 2;
