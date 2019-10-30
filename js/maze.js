@@ -1,5 +1,5 @@
 /*
-The Map class is will contain the map as read from the file.
+The Maze class is will contain the map as read from the file.
 There are two arrays, horizontalWalls and verticalWalls.
 At any particular position, x and y, there will be a true/false
 value in horizontalWalls and verticalWalls to determine which walls
